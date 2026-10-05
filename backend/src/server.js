@@ -3,6 +3,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const { sequelize } = require('./models/index');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 
@@ -12,6 +13,8 @@ app.use(express.json());
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'Travel Booking API is running' });
 });
+
+app.use('/api/auth', authRoutes);
 
 const PORT = process.env.PORT || 5000;
 
