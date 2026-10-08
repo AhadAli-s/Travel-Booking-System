@@ -23,3 +23,5 @@ flutter_app/*.iml
 .DS_Store
 Thumbs.db
 *.log
+
+backend/uploads/
