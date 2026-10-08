@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
-const { Customer } = require('../models/index');
+const { Customer, Staff } = require('../models/index');
 const { generateToken } = require('../utils/jwt');
 
 const SALT_ROUNDS = 10;
@@ -125,4 +125,32 @@ async function resetPassword(req, res) {
     }
 }
 
-module.exports = { register, login, logout, requestPasswordReset, resetPassword };
+async function staffLogin(req, res) {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ error: 'email and password are required' });
+        }
+
+        const staff = await Staff.findOne({ where: { email } });
+        if (!staff || staff.status !== 'Active') {
+            return res.status(401).json({ error: 'Invalid email or password' });
+        }
+
+        const match = await bcrypt.compare(password, staff.passwordHash);
+        if (!match) {
+            return res.status(401).json({ error: 'Invalid email or password' });
+        }
+
+        const token = generateToken({ id: staff.id, type: 'staff', role: staff.role }, '12h');
+
+        res.json({
+            token,
+            staff: { id: staff.id, fullName: staff.fullName, email: staff.email, role: staff.role },
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
+module.exports = { register, login, logout, requestPasswordReset, resetPassword, staffLogin };
