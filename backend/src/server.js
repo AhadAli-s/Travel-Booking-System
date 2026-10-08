@@ -1,10 +1,14 @@
 const express = require('express');
 const cors = require('cors');
+const multer = require('multer');
 require('dotenv').config();
 
 const { sequelize } = require('./models/index');
 const authRoutes = require('./routes/authRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
+const documentRoutes = require('./routes/documentRoutes');
+const ticketRoutes = require('./routes/ticketRoutes');
 
 const app = express();
 
@@ -16,7 +20,25 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/bookings/:bookingId/payment', paymentRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api', documentRoutes);
+app.use('/api/tickets', ticketRoutes);
+
+// Malformed JSON bodies and upload problems return clean JSON errors
+app.use((err, req, res, next) => {
+    if (err instanceof multer.MulterError) {
+        return res.status(400).json({ error: `Upload error: ${err.message}` });
+    }
+    if (err.type === 'entity.parse.failed') {
+        return res.status(400).json({ error: 'Request body is not valid JSON' });
+    }
+    if (err.message === 'Only PDF, PNG, and JPEG files are allowed') {
+        return res.status(400).json({ error: err.message });
+    }
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+});
 
 const PORT = process.env.PORT || 5000;
 
@@ -25,9 +47,6 @@ async function startServer() {
         await sequelize.authenticate();
         console.log('Database connection established successfully.');
 
-        // Creates all 13 tables (and their foreign keys) if they don't exist yet.
-        // alter: true lets Sequelize adjust existing tables to match the models
-        // during development, without needing a full migration tool yet.
         await sequelize.sync({ alter: true });
         console.log('All models synchronized with the database.');
 
