@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const ticketController = require('../controllers/ticketController');
-const { requireAuth, requireStaff } = require('../middleware/auth');
+const { requireAuth, requireCustomer, requireStaff } = require('../middleware/auth');
 
 // Customer
-router.post('/', requireAuth, ticketController.createTicket);
-router.get('/my', requireAuth, ticketController.getMyTickets);
+router.post('/', requireAuth, requireCustomer, ticketController.createTicket);
+router.get('/my', requireAuth, requireCustomer, ticketController.getMyTickets);
 
 // Staff dashboard
 router.get('/', requireAuth, requireStaff, ticketController.listAllTickets);
