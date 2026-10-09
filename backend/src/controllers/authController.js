@@ -2,16 +2,31 @@ const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const { Customer, Staff } = require('../models/index');
 const { generateToken } = require('../utils/jwt');
+const {
+    normalizeEmail,
+    validateRegistrationBody,
+    validateLoginBody,
+    validateResetPasswordBody,
+} = require('../utils/authValidation');
 
 const SALT_ROUNDS = 10;
 
+function handleAuthError(res, err) {
+    if (err.name === 'SequelizeValidationError' || err.name === 'SequelizeUniqueConstraintError') {
+        const message = err.errors?.map((e) => e.message).join(', ') || err.message;
+        return res.status(400).json({ error: message });
+    }
+    return res.status(500).json({ error: err.message });
+}
+
 async function register(req, res) {
     try {
-        const { fullName, email, password, phone } = req.body;
-
-        if (!fullName || !email || !password) {
-            return res.status(400).json({ error: 'fullName, email, and password are required' });
+        const validated = validateRegistrationBody(req.body);
+        if (validated.error) {
+            return res.status(400).json({ error: validated.error });
         }
+
+        const { fullName, email, password, phone } = validated;
 
         const existing = await Customer.findOne({ where: { email } });
         if (existing) {
@@ -28,16 +43,18 @@ async function register(req, res) {
             customer: { id: customer.id, fullName: customer.fullName, email: customer.email },
         });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        handleAuthError(res, err);
     }
 }
 
 async function login(req, res) {
     try {
-        const { email, password } = req.body;
-        if (!email || !password) {
-            return res.status(400).json({ error: 'email and password are required' });
+        const validated = validateLoginBody(req.body);
+        if (validated.error) {
+            return res.status(400).json({ error: validated.error });
         }
+
+        const { email, password } = validated;
 
         const customer = await Customer.findOne({ where: { email } });
         if (!customer) {
@@ -56,7 +73,7 @@ async function login(req, res) {
             customer: { id: customer.id, fullName: customer.fullName, email: customer.email },
         });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        handleAuthError(res, err);
     }
 }
 
@@ -72,7 +89,7 @@ async function logout(req, res) {
 
 async function requestPasswordReset(req, res) {
     try {
-        const { email } = req.body;
+        const email = normalizeEmail(req.body.email);
         if (!email) {
             return res.status(400).json({ error: 'email is required' });
         }
@@ -98,16 +115,18 @@ async function requestPasswordReset(req, res) {
             devResetToken: resetToken,
         });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        handleAuthError(res, err);
     }
 }
 
 async function resetPassword(req, res) {
     try {
-        const { resetToken, newPassword } = req.body;
-        if (!resetToken || !newPassword) {
-            return res.status(400).json({ error: 'resetToken and newPassword are required' });
+        const validated = validateResetPasswordBody(req.body);
+        if (validated.error) {
+            return res.status(400).json({ error: validated.error });
         }
+
+        const { resetToken, newPassword } = validated;
 
         const customer = await Customer.findOne({ where: { resetToken } });
         if (!customer || customer.resetTokenExpiry < new Date()) {
@@ -121,16 +140,18 @@ async function resetPassword(req, res) {
 
         res.json({ message: 'Password reset successfully' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        handleAuthError(res, err);
     }
 }
 
 async function staffLogin(req, res) {
     try {
-        const { email, password } = req.body;
-        if (!email || !password) {
-            return res.status(400).json({ error: 'email and password are required' });
+        const validated = validateLoginBody(req.body);
+        if (validated.error) {
+            return res.status(400).json({ error: validated.error });
         }
+
+        const { email, password } = validated;
 
         const staff = await Staff.findOne({ where: { email } });
         if (!staff || staff.status !== 'Active') {
@@ -149,7 +170,7 @@ async function staffLogin(req, res) {
             staff: { id: staff.id, fullName: staff.fullName, email: staff.email, role: staff.role },
         });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        handleAuthError(res, err);
     }
 }
 
