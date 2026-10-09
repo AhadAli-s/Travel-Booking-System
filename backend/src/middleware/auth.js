@@ -21,6 +21,14 @@ function requireAuth(req, res, next) {
     }
 }
 
+/** Only allows requests where req.user.type === 'customer' */
+function requireCustomer(req, res, next) {
+    if (!req.user || req.user.type !== 'customer') {
+        return res.status(403).json({ error: 'Customer access required' });
+    }
+    next();
+}
+
 /** Only allows requests where req.user.type === 'staff' */
 function requireStaff(req, res, next) {
     if (!req.user || req.user.type !== 'staff') {
@@ -39,4 +47,4 @@ function requireRole(...allowedRoles) {
     };
 }
 
-module.exports = { requireAuth, requireStaff, requireRole };
+module.exports = { requireAuth, requireCustomer, requireStaff, requireRole };
