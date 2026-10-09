@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bookingController = require('../controllers/bookingController');
 const detailsController = require('../controllers/bookingDetailsController');
-const { requireAuth, requireStaff, requireRole } = require('../middleware/auth');
+const { requireAuth, requireCustomer, requireStaff, requireRole } = require('../middleware/auth');
 
 // --- Public (no login — the "enter Booking Reference & Email" flow) ---
 router.post('/lookup', bookingController.lookupBooking);
@@ -14,7 +14,7 @@ router.post('/lookup', bookingController.lookupBooking);
 router.post('/website-sync', bookingController.createBookingFromWebsite);
 
 // --- Customer (logged in) ---
-router.get('/my', requireAuth, bookingController.getMyBookings);
+router.get('/my', requireAuth, requireCustomer, bookingController.getMyBookings);
 
 // --- Staff ---
 router.get('/', requireAuth, requireStaff, bookingController.listAllBookings);
