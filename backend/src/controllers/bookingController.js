@@ -3,6 +3,7 @@ const {
     Booking, Customer, Staff, Flight, Hotel, Transfer, Payment, Passenger, Document,
 } = require('../models/index');
 const { generateBookingReference } = require('../utils/generateReference');
+const { notifyCustomer } = require('../utils/notify');
 
 const FULL_INCLUDE = [
     { model: Flight },
@@ -257,6 +258,12 @@ async function updateBookingStatus(req, res) {
 
         booking.status = status;
         await booking.save();
+
+        await notifyCustomer(
+            booking.customerId,
+            'BookingStatus',
+            `Your booking ${booking.bookingReference} is now ${status}.`
+        );
 
         res.json({ message: 'Status updated', booking });
     } catch (err) {
