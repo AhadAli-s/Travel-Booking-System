@@ -9,6 +9,10 @@ const bookingRoutes = require('./routes/bookingRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const documentRoutes = require('./routes/documentRoutes');
 const ticketRoutes = require('./routes/ticketRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+const profileRoutes = require('./routes/profileRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
+const adminDashboardRoutes = require('./routes/adminDashboardRoutes');
 
 const app = express();
 
@@ -24,6 +28,10 @@ app.use('/api/bookings/:bookingId/payment', paymentRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api', documentRoutes);
 app.use('/api/tickets', ticketRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/profile', profileRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/admin/dashboard', adminDashboardRoutes);
 
 // Malformed JSON bodies and upload problems return clean JSON errors
 app.use((err, req, res, next) => {
