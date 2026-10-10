@@ -18,10 +18,10 @@ router.get('/my', requireAuth, requireCustomer, bookingController.getMyBookings)
 
 // --- Staff ---
 router.get('/', requireAuth, requireStaff, bookingController.listAllBookings);
-router.post('/', requireAuth, requireRole('Administrator', 'BookingAgent'), bookingController.createBookingByStaff);
+router.post('/', requireAuth, requireStaff, requireRole('Administrator', 'BookingAgent'), bookingController.createBookingByStaff);
 router.patch('/:id', requireAuth, requireStaff, bookingController.updateBooking);
 router.patch('/:id/status', requireAuth, requireStaff, bookingController.updateBookingStatus);
-router.patch('/:id/assign', requireAuth, requireRole('Administrator', 'BookingAgent'), bookingController.assignStaff);
+router.patch('/:id/assign', requireAuth, requireStaff, requireRole('Administrator', 'BookingAgent'), bookingController.assignStaff);
 
 // --- Shared: get single booking (customer: own only; staff: any) ---
 router.get('/:id', requireAuth, bookingController.getBookingById);
