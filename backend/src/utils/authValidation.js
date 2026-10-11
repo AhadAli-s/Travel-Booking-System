@@ -73,6 +73,8 @@ function validateResetPasswordBody(body) {
 
 module.exports = {
     normalizeEmail,
+    isValidEmail,
+    validatePassword,
     validateRegistrationBody,
     validateLoginBody,
     validateResetPasswordBody,
