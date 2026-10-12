@@ -1,5 +1,6 @@
 const { Booking, Payment, PaymentHistory } = require('../models/index');
 const { notifyCustomer } = require('../utils/notify');
+const { sendError } = require('../utils/sendError');
 
 /** Loads the booking and checks the requester may access it (customers: own only, staff: any). */
 async function loadBookingWithAccess(req, res) {
@@ -50,7 +51,7 @@ async function getPayment(req, res) {
 
         res.json(buildPaymentSummary(payment, history));
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
@@ -108,7 +109,7 @@ async function recordPayment(req, res) {
             paymentStatus: payment.paymentStatus,
         });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
@@ -155,7 +156,7 @@ async function issueRefund(req, res) {
             paymentStatus: payment.paymentStatus,
         });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
@@ -186,7 +187,7 @@ async function getReceipt(req, res) {
             remainingBalance: Math.max(Number(payment.totalPackagePrice) - Number(payment.amountPaid), 0),
         });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
