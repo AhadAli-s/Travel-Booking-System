@@ -1,5 +1,6 @@
 const { Op } = require('sequelize');
 const { Booking, Payment, SupportTicket } = require('../models/index');
+const { sendError } = require('../utils/sendError');
 
 function isoDate(offsetDays) {
     const d = new Date();
@@ -49,7 +50,7 @@ async function getAdminDashboard(req, res) {
             openSupportTickets,
         });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
