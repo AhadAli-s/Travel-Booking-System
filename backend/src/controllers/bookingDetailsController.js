@@ -1,4 +1,20 @@
 const { Booking, Flight, Hotel, Transfer, Passenger } = require('../models/index');
+const { pick } = require('../utils/pick');
+const { sendError } = require('../utils/sendError');
+
+const FLIGHT_FIELDS = [
+    'airline', 'flightNumber', 'departureAirport', 'arrivalAirport', 'departureTime', 'arrivalTime',
+    'returnFlightNumber', 'returnDepartureTime', 'returnArrivalTime', 'baggageAllowance',
+];
+const HOTEL_FIELDS = [
+    'hotelName', 'hotelAddress', 'roomType', 'numRooms', 'boardBasis',
+    'checkInDate', 'checkOutDate', 'confirmationNumber',
+];
+const TRANSFER_FIELDS = ['pickupLocation', 'pickupTime', 'dropoffLocation', 'transferStatus'];
+const PASSENGER_FIELDS = [
+    'fullName', 'dateOfBirth', 'passengerType', 'passportNumber', 'passportExpiry',
+    'specialAssistance', 'mealPreference', 'baggage',
+];
 
 /**
  * Shared helper: confirms the booking exists AND that the requester is
@@ -28,13 +44,13 @@ async function upsertFlight(req, res) {
 
         let flight = await Flight.findOne({ where: { bookingId: booking.id } });
         if (flight) {
-            await flight.update(req.body);
+            await flight.update(pick(req.body, FLIGHT_FIELDS));
         } else {
-            flight = await Flight.create({ ...req.body, bookingId: booking.id });
+            flight = await Flight.create({ ...pick(req.body, FLIGHT_FIELDS), bookingId: booking.id });
         }
         res.json(flight);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
@@ -46,13 +62,13 @@ async function upsertHotel(req, res) {
 
         let hotel = await Hotel.findOne({ where: { bookingId: booking.id } });
         if (hotel) {
-            await hotel.update(req.body);
+            await hotel.update(pick(req.body, HOTEL_FIELDS));
         } else {
-            hotel = await Hotel.create({ ...req.body, bookingId: booking.id });
+            hotel = await Hotel.create({ ...pick(req.body, HOTEL_FIELDS), bookingId: booking.id });
         }
         res.json(hotel);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
@@ -64,13 +80,13 @@ async function upsertTransfer(req, res) {
 
         let transfer = await Transfer.findOne({ where: { bookingId: booking.id } });
         if (transfer) {
-            await transfer.update(req.body);
+            await transfer.update(pick(req.body, TRANSFER_FIELDS));
         } else {
-            transfer = await Transfer.create({ ...req.body, bookingId: booking.id });
+            transfer = await Transfer.create({ ...pick(req.body, TRANSFER_FIELDS), bookingId: booking.id });
         }
         res.json(transfer);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
@@ -80,10 +96,16 @@ async function addPassenger(req, res) {
         const booking = await findBookingOr404(req, res);
         if (!booking) return;
 
-        const passenger = await Passenger.create({ ...req.body, bookingId: booking.id });
+        const allowed = Math.max(booking.numAdults + booking.numChildren + booking.numInfants, 1);
+        const existing = await Passenger.count({ where: { bookingId: booking.id } });
+        if (existing >= allowed) {
+            return res.status(400).json({ error: `This booking has ${allowed} traveller(s); no more passengers can be added` });
+        }
+
+        const passenger = await Passenger.create({ ...pick(req.body, PASSENGER_FIELDS), bookingId: booking.id });
         res.status(201).json(passenger);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
@@ -100,7 +122,7 @@ async function listPassengers(req, res) {
         });
         res.json(passengers);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
@@ -121,7 +143,7 @@ async function getPassengerDetail(req, res) {
         if (!passenger) return res.status(404).json({ error: 'Passenger not found' });
         res.json(passenger);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
@@ -135,10 +157,10 @@ async function updatePassenger(req, res) {
         });
         if (!passenger) return res.status(404).json({ error: 'Passenger not found' });
 
-        await passenger.update(req.body);
+        await passenger.update(pick(req.body, PASSENGER_FIELDS));
         res.json(passenger);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
@@ -155,7 +177,7 @@ async function deletePassenger(req, res) {
         await passenger.destroy();
         res.json({ message: 'Passenger removed' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
