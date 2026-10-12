@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const multer = require('multer');
 const { Booking, Document } = require('../models/index');
 const { notifyCustomer } = require('../utils/notify');
+const { sendError } = require('../utils/sendError');
 
 const UPLOAD_DIR = path.join(__dirname, '..', '..', 'uploads', 'documents');
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
@@ -88,7 +89,7 @@ async function uploadDocument(req, res) {
             uploadedAt: document.uploadedAt,
         });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
@@ -105,7 +106,7 @@ async function listDocuments(req, res) {
         });
         res.json(documents);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
@@ -127,7 +128,7 @@ async function downloadDocument(req, res) {
 
         res.download(fullPath, document.fileName);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
@@ -143,7 +144,7 @@ async function deleteDocument(req, res) {
         await document.destroy();
         res.json({ message: 'Document deleted' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
