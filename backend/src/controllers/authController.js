@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const { Customer, Staff } = require('../models/index');
 const { generateToken } = require('../utils/jwt');
+const { sendError } = require('../utils/sendError');
 const {
     normalizeEmail,
     validateRegistrationBody,
@@ -11,12 +12,12 @@ const {
 
 const SALT_ROUNDS = 10;
 
+function hashResetToken(token) {
+    return crypto.createHash('sha256').update(String(token)).digest('hex');
+}
+
 function handleAuthError(res, err) {
-    if (err.name === 'SequelizeValidationError' || err.name === 'SequelizeUniqueConstraintError') {
-        const message = err.errors?.map((e) => e.message).join(', ') || err.message;
-        return res.status(400).json({ error: message });
-    }
-    return res.status(500).json({ error: err.message });
+    return sendError(res, err);
 }
 
 async function register(req, res) {
@@ -104,16 +105,15 @@ async function requestPasswordReset(req, res) {
         const resetToken = crypto.randomBytes(32).toString('hex');
         const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
-        customer.resetToken = resetToken;
+        customer.resetToken = hashResetToken(resetToken); // only the hash is stored
         customer.resetTokenExpiry = resetTokenExpiry;
         await customer.save();
 
-        // In production this would be emailed, not returned in the response.
-        // Returned here for development/testing purposes only.
-        res.json({
-            message: 'If that email is registered, a reset link has been sent.',
-            devResetToken: resetToken,
-        });
+        // In production the token is emailed. Outside production it is also
+        // returned here so the flow can be tested without an email service.
+        const response = { message: 'If that email is registered, a reset link has been sent.' };
+        if (process.env.NODE_ENV !== 'production') response.devResetToken = resetToken;
+        res.json(response);
     } catch (err) {
         handleAuthError(res, err);
     }
@@ -128,7 +128,7 @@ async function resetPassword(req, res) {
 
         const { resetToken, newPassword } = validated;
 
-        const customer = await Customer.findOne({ where: { resetToken } });
+        const customer = await Customer.findOne({ where: { resetToken: hashResetToken(resetToken) } });
         if (!customer || customer.resetTokenExpiry < new Date()) {
             return res.status(400).json({ error: 'Invalid or expired reset token' });
         }
