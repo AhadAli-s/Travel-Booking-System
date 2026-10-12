@@ -1,23 +1,40 @@
 const { verifyToken } = require('../utils/jwt');
+const { Staff } = require('../models/index');
 
 /**
  * Verifies the JWT in the Authorization header (format: "Bearer <token>").
  * On success, attaches the decoded payload to req.user and calls next().
  * The payload includes { id, type: 'customer' | 'staff', role (staff only) }.
+ *
+ * For staff tokens the staff row is re-checked on every request, so a
+ * deactivated account or a changed role takes effect immediately instead of
+ * waiting for the token to expire. req.user.role always reflects the database.
  */
-function requireAuth(req, res, next) {
+async function requireAuth(req, res, next) {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ error: 'No token provided' });
     }
 
-    const token = authHeader.split(' ')[1];
+    let decoded;
     try {
-        const decoded = verifyToken(token);
+        decoded = verifyToken(authHeader.split(' ')[1]);
+    } catch (err) {
+        return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+
+    try {
+        if (decoded.type === 'staff') {
+            const staff = await Staff.findByPk(decoded.id, { attributes: ['id', 'role', 'status'] });
+            if (!staff || staff.status !== 'Active') {
+                return res.status(401).json({ error: 'Staff account is inactive' });
+            }
+            decoded.role = staff.role;
+        }
         req.user = decoded;
         next();
     } catch (err) {
-        return res.status(401).json({ error: 'Invalid or expired token' });
+        next(err);
     }
 }
 
