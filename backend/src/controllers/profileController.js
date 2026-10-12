@@ -1,4 +1,5 @@
 const { Customer } = require('../models/index');
+const { sendError } = require('../utils/sendError');
 
 const PROFILE_ATTRIBUTES = ['id', 'fullName', 'email', 'phone', 'createdAt'];
 
@@ -12,7 +13,7 @@ async function getProfile(req, res) {
         }
         res.json(customer);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
@@ -50,7 +51,7 @@ async function updateProfile(req, res) {
             createdAt: customer.createdAt,
         });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
