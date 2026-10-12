@@ -1,5 +1,6 @@
 const { SupportTicket, TicketReply, Booking, Customer, Staff } = require('../models/index');
 const { notifyCustomer } = require('../utils/notify');
+const { sendError } = require('../utils/sendError');
 
 const VALID_CATEGORIES = [
     'Flight', 'Hotel', 'Payment', 'Transfer', 'Document',
@@ -51,7 +52,7 @@ async function createTicket(req, res) {
 
         res.status(201).json(ticket);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
@@ -64,7 +65,7 @@ async function getMyTickets(req, res) {
         });
         res.json(tickets);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
@@ -84,7 +85,7 @@ async function listAllTickets(req, res) {
         });
         res.json(tickets);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
@@ -101,7 +102,7 @@ async function getTicket(req, res) {
 
         res.json({ ...ticket.toJSON(), replies });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
@@ -111,8 +112,10 @@ async function addReply(req, res) {
         const ticket = await loadTicketWithAccess(req, res);
         if (!ticket) return;
 
-        const { message } = req.body;
-        if (!message) return res.status(400).json({ error: 'message is required' });
+        const message = typeof req.body.message === 'string' ? req.body.message.trim() : '';
+        if (!message || message.length > 5000) {
+            return res.status(400).json({ error: 'message is required (max 5000 characters)' });
+        }
 
         if (ticket.status === 'Closed') {
             return res.status(400).json({ error: 'This ticket is closed and can no longer be replied to' });
@@ -139,7 +142,7 @@ async function addReply(req, res) {
 
         res.status(201).json(reply);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
@@ -167,7 +170,7 @@ async function updateTicketStatus(req, res) {
 
         res.json(ticket);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
@@ -187,7 +190,7 @@ async function assignTicket(req, res) {
         await ticket.save();
         res.json(ticket);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
