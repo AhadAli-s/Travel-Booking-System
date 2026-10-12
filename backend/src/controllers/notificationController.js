@@ -1,4 +1,5 @@
 const { Notification } = require('../models/index');
+const { sendError } = require('../utils/sendError');
 
 /** Customer's in-app notifications, newest first. */
 async function listNotifications(req, res) {
@@ -9,7 +10,7 @@ async function listNotifications(req, res) {
         });
         res.json(notifications);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
@@ -20,7 +21,7 @@ async function getUnreadCount(req, res) {
         });
         res.json({ unreadCount });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
@@ -35,7 +36,7 @@ async function markAsRead(req, res) {
         await notification.save();
         res.json(notification);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
@@ -47,7 +48,7 @@ async function markAllAsRead(req, res) {
         );
         res.json({ message: 'All notifications marked as read' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
