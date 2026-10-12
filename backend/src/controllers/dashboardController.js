@@ -1,5 +1,6 @@
 const { Op } = require('sequelize');
 const { Booking, Payment, Document, SupportTicket } = require('../models/index');
+const { sendError } = require('../utils/sendError');
 
 function daysUntil(dateValue) {
     const today = new Date();
@@ -73,7 +74,7 @@ async function getCustomerDashboard(req, res) {
             support: { activeTickets },
         });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        sendError(res, err);
     }
 }
 
