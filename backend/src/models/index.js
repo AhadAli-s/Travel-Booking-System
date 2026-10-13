@@ -13,6 +13,7 @@ const Passenger = require('./Passenger');
 const SupportTicket = require('./SupportTicket');
 const TicketReply = require('./TicketReply');
 const Notification = require('./Notification');
+const ContactNote = require('./ContactNote');
 
 // --- Customer <-> Booking ---
 Customer.hasMany(Booking, { foreignKey: 'customerId', onDelete: 'CASCADE' });
@@ -68,6 +69,16 @@ TicketReply.belongsTo(SupportTicket, { foreignKey: 'ticketId' });
 Customer.hasMany(Notification, { foreignKey: 'customerId', onDelete: 'CASCADE' });
 Notification.belongsTo(Customer, { foreignKey: 'customerId' });
 
+// --- Contact history: staff notes about a customer (optionally tied to a booking) ---
+Customer.hasMany(ContactNote, { foreignKey: 'customerId', onDelete: 'CASCADE' });
+ContactNote.belongsTo(Customer, { foreignKey: 'customerId' });
+
+Booking.hasMany(ContactNote, { foreignKey: 'bookingId', onDelete: 'SET NULL' });
+ContactNote.belongsTo(Booking, { foreignKey: 'bookingId' });
+
+Staff.hasMany(ContactNote, { foreignKey: 'staffId', onDelete: 'SET NULL' });
+ContactNote.belongsTo(Staff, { foreignKey: 'staffId', as: 'author' });
+
 module.exports = {
     sequelize,
     Customer,
@@ -83,4 +94,5 @@ module.exports = {
     SupportTicket,
     TicketReply,
     Notification,
+    ContactNote,
 };
