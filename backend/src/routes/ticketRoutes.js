@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const ticketController = require('../controllers/ticketController');
-const { requireAuth, requireCustomer, requireStaff } = require('../middleware/auth');
+const { requireAuth, requireCustomer, requireStaff, requireRole } = require('../middleware/auth');
 
 // Customer
 router.post('/', requireAuth, requireCustomer, ticketController.createTicket);
@@ -15,7 +15,7 @@ router.get('/:id', requireAuth, ticketController.getTicket);
 router.post('/:id/replies', requireAuth, ticketController.addReply);
 
 // Staff actions
-router.patch('/:id/status', requireAuth, requireStaff, ticketController.updateTicketStatus);
-router.patch('/:id/assign', requireAuth, requireStaff, ticketController.assignTicket);
+router.patch('/:id/status', requireAuth, requireStaff, requireRole('Administrator', 'SupportAgent'), ticketController.updateTicketStatus);
+router.patch('/:id/assign', requireAuth, requireStaff, requireRole('Administrator', 'SupportAgent'), ticketController.assignTicket);
 
 module.exports = router;
