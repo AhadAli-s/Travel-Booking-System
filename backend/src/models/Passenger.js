@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
+const { encrypt, decrypt } = require('../utils/fieldCrypto');
 
 // NOTE: passportNumber is sensitive data. It should never be returned in a
 // plain list/summary endpoint — only on an explicit, authorized single-passenger
@@ -12,7 +13,13 @@ const Passenger = sequelize.define('Passenger', {
         type: DataTypes.ENUM('Adult', 'Child', 'Infant'),
         allowNull: false,
     },
-    passportNumber: { type: DataTypes.STRING, allowNull: true },
+    passportNumber: {
+        type: DataTypes.STRING(512),
+        allowNull: true,
+        // Stored encrypted (AES-256-GCM). Reads decrypt transparently.
+        get() { return decrypt(this.getDataValue('passportNumber')); },
+        set(value) { this.setDataValue('passportNumber', encrypt(value)); },
+    },
     passportExpiry: { type: DataTypes.DATEONLY, allowNull: true },
     specialAssistance: { type: DataTypes.STRING, allowNull: true },
     mealPreference: { type: DataTypes.STRING, allowNull: true },
