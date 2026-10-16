@@ -17,7 +17,7 @@ class Customer {
       id: id is num ? id.toInt() : 0,
       fullName: (json['fullName'] ?? '').toString(),
       email: (json['email'] ?? '').toString(),
-      phone: json['phone'] == null ? null : json['phone'].toString(),
+      phone: json['phone']?.toString(),
     );
   }
 
