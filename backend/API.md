@@ -62,7 +62,8 @@ Customer tokens last 7 days, staff tokens 12 hours. A staff token stops working 
 | GET /bookings/:bookingId/payment | `{ totalPackagePrice, amountPaid, remainingBalance, paymentDueDate, paymentStatus, history:[{id,amount,paymentDate,method,note}] }` (numbers) |
 | GET /bookings/:bookingId/payment/receipts/:receiptId | Receipt for one payment history entry |
 | GET /bookings/:bookingId/documents | `[{id,documentType,fileName,uploadedAt}]` |
-| GET /documents/:id/download | File bytes. Send the Authorization header, so save the bytes in the app instead of opening a plain link |
+| GET /documents/:id/link | `{ url, expiresInSeconds: 90 }`. A signed link for this one document. Open it with the system browser or viewer (`url_launcher`). Relative to the server root: prepend `http://host:port` |
+| GET /documents/:id/download | File bytes, shown inline. Accepts either the Authorization header or the signed `?t=` token from the link above. A link token is only valid for its own document and is never accepted as a login token |
 | GET /bookings/:bookingId/passengers | List without passport fields |
 | GET /bookings/:bookingId/passengers/:passengerId | Detail including passportNumber and passportExpiry |
 | POST /bookings/:bookingId/passengers | fullName, dateOfBirth, passengerType, passportNumber?, passportExpiry?, specialAssistance?, mealPreference?, baggage?. Limited to the number of travellers on the booking |
