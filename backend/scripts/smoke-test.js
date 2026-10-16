@@ -135,6 +135,13 @@ async function main() {
     check('booking agent uploads a document', up.status === 201, JSON.stringify(up.json));
     const dl = await call('GET', `/api/documents/${up.json?.id}/download`, { token: customer });
     check('owner downloads it', dl.status === 200 && dl.text.includes('smoke'));
+    const link = await call('GET', `/api/documents/${up.json?.id}/link`, { token: customer });
+    check('owner gets a short lived download link', link.status === 200 && link.json?.url?.includes('?t='), JSON.stringify(link.json));
+    const viaLink = await fetch(BASE + link.json?.url);
+    check('link downloads the file without an Authorization header', viaLink.status === 200 && (await viaLink.text()).includes('smoke'));
+    check('link is tied to one document', (await fetch(BASE + link.json?.url.replace(`/documents/${up.json?.id}/`, `/documents/${Number(up.json?.id) + 1000}/`))).status === 401);
+    check('link token cannot be used as a login token', (await call('GET', '/api/bookings/my', { token: link.json?.url.split('?t=')[1] })).status === 401);
+    check('tampered link is rejected', (await fetch(BASE + link.json?.url + 'x')).status === 401);
     check('support agent cannot upload documents', (await call('POST', `/api/bookings/${bookingId}/documents`, { token: support, form })).status === 403);
 
     console.log('\nTickets');
