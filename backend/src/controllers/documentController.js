@@ -3,6 +3,8 @@ const fs = require('fs');
 const crypto = require('crypto');
 const multer = require('multer');
 const { Booking, Document } = require('../models/index');
+const { generateToken, verifyToken } = require('../utils/jwt');
+const { requireAuth } = require('../middleware/auth');
 const { notifyCustomer } = require('../utils/notify');
 const { sendError } = require('../utils/sendError');
 
@@ -110,23 +112,82 @@ async function listDocuments(req, res) {
     }
 }
 
+const LINK_SECONDS = 90;
+
+/**
+ * Looks up a document and checks that this user may access it.
+ * Returns { document } or { status, error }.
+ */
+async function findDocumentForUser(user, documentId) {
+    const document = await Document.findByPk(documentId);
+    if (!document) return { status: 404, error: 'Document not found' };
+
+    const booking = await Booking.findByPk(document.bookingId);
+    if (user.type === 'customer' && booking.customerId !== user.id) {
+        return { status: 403, error: 'You do not have access to this document' };
+    }
+    return { document };
+}
+
+/**
+ * Customer (own booking) or staff: get a short lived download link.
+ * Apps open this link in the browser or system viewer, which cannot send an
+ * Authorization header. The link works for one document and expires quickly.
+ */
+async function createDocumentLink(req, res) {
+    try {
+        const found = await findDocumentForUser(req.user, req.params.id);
+        if (found.error) return res.status(found.status).json({ error: found.error });
+
+        const token = generateToken(
+            { purpose: 'document', docId: found.document.id, userId: req.user.id, userType: req.user.type },
+            `${LINK_SECONDS}s`
+        );
+        res.json({
+            url: `/api/documents/${found.document.id}/download?t=${token}`,
+            expiresInSeconds: LINK_SECONDS,
+        });
+    } catch (err) {
+        sendError(res, err);
+    }
+}
+
+/** Accepts either a normal login token or a signed document link (?t=...). */
+function authenticateDownload(req, res, next) {
+    const linkToken = typeof req.query.t === 'string' ? req.query.t : null;
+    if (!linkToken) return requireAuth(req, res, next);
+
+    try {
+        const payload = verifyToken(linkToken);
+        if (payload.purpose !== 'document' || String(payload.docId) !== String(req.params.id)) {
+            throw new Error('wrong link');
+        }
+        req.user = { id: payload.userId, type: payload.userType };
+        next();
+    } catch (err) {
+        res.status(401).json({ error: 'Download link is invalid or has expired' });
+    }
+}
+
 /** Customer (own booking) or staff: download one document after an ownership check */
 async function downloadDocument(req, res) {
     try {
-        const document = await Document.findByPk(req.params.id);
-        if (!document) return res.status(404).json({ error: 'Document not found' });
-
-        const booking = await Booking.findByPk(document.bookingId);
-        if (req.user.type === 'customer' && booking.customerId !== req.user.id) {
-            return res.status(403).json({ error: 'You do not have access to this document' });
-        }
+        const found = await findDocumentForUser(req.user, req.params.id);
+        if (found.error) return res.status(found.status).json({ error: found.error });
+        const { document } = found;
 
         const fullPath = path.join(UPLOAD_DIR, document.filePath);
         if (!fs.existsSync(fullPath)) {
             return res.status(404).json({ error: 'File is missing from storage' });
         }
 
-        res.download(fullPath, document.fileName);
+        // inline: PDFs and images open in the viewer instead of silently downloading
+        res.sendFile(fullPath, {
+            headers: {
+                'Content-Disposition': `inline; filename*=UTF-8''${encodeURIComponent(document.fileName)}`,
+                'Cache-Control': 'private, no-store',
+            },
+        });
     } catch (err) {
         sendError(res, err);
     }
@@ -148,4 +209,12 @@ async function deleteDocument(req, res) {
     }
 }
 
-module.exports = { upload, uploadDocument, listDocuments, downloadDocument, deleteDocument };
+module.exports = {
+    upload,
+    uploadDocument,
+    listDocuments,
+    createDocumentLink,
+    authenticateDownload,
+    downloadDocument,
+    deleteDocument,
+};

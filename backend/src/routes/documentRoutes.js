@@ -18,7 +18,8 @@ router.post(
 );
 
 // Document-scoped
-router.get('/documents/:id/download', requireAuth, documentController.downloadDocument);
+router.get('/documents/:id/link', requireAuth, documentController.createDocumentLink);
+router.get('/documents/:id/download', documentController.authenticateDownload, documentController.downloadDocument);
 router.delete('/documents/:id', requireAuth, requireStaff, documentStaff, documentController.deleteDocument);
 
 module.exports = router;
