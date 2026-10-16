@@ -12,8 +12,7 @@ int toInt(dynamic value) {
   return 0;
 }
 
-String? toNullableString(dynamic value) =>
-    value == null ? null : value.toString();
+String? toNullableString(dynamic value) => value?.toString();
 
 /// Parses "YYYY-MM-DD" or a full ISO date time. Returns null when missing or invalid.
 DateTime? parseDate(dynamic value) {
