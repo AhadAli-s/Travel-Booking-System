@@ -23,6 +23,12 @@ async function requireAuth(req, res, next) {
         return res.status(401).json({ error: 'Invalid or expired token' });
     }
 
+    // Only real session tokens are accepted. Special purpose tokens (such as
+    // document download links) carry a "purpose" claim and must never act as a login.
+    if (decoded.purpose || (decoded.type !== 'customer' && decoded.type !== 'staff')) {
+        return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+
     try {
         if (decoded.type === 'staff') {
             const staff = await Staff.findByPk(decoded.id, { attributes: ['id', 'role', 'status'] });
