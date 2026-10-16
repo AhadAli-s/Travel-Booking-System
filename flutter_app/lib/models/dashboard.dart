@@ -1,4 +1,5 @@
 import '../core/json_utils.dart';
+import 'payment.dart';
 
 class UpcomingTrip {
   const UpcomingTrip({
@@ -31,32 +32,6 @@ class UpcomingTrip {
       returnDate: parseDate(json['returnDate']),
       status: (json['status'] ?? '').toString(),
       daysUntilTravel: toInt(json['daysUntilTravel']),
-    );
-  }
-}
-
-class PaymentSummary {
-  const PaymentSummary({
-    required this.totalPackagePrice,
-    required this.amountPaid,
-    required this.remainingBalance,
-    required this.paymentStatus,
-    this.paymentDueDate,
-  });
-
-  final double totalPackagePrice;
-  final double amountPaid;
-  final double remainingBalance;
-  final DateTime? paymentDueDate;
-  final String paymentStatus;
-
-  factory PaymentSummary.fromJson(Map<String, dynamic> json) {
-    return PaymentSummary(
-      totalPackagePrice: toDouble(json['totalPackagePrice']),
-      amountPaid: toDouble(json['amountPaid']),
-      remainingBalance: toDouble(json['remainingBalance']),
-      paymentDueDate: parseDate(json['paymentDueDate']),
-      paymentStatus: (json['paymentStatus'] ?? '').toString(),
     );
   }
 }
