@@ -19,13 +19,19 @@ class StatusChip extends StatelessWidget {
       case 'DocumentsIssued':
       case 'ReadyToTravel':
       case 'TravelCompleted':
+      case 'FullyPaid':
+      case 'Resolved':
         return AppColors.success;
       case 'Pending':
       case 'Processing':
       case 'AwaitingPayment':
       case 'DocumentsPending':
+      case 'PartiallyPaid':
+      case 'InProgress':
+      case 'WaitingForCustomer':
         return const Color(0xFF8A6D00);
       case 'Cancelled':
+      case 'Unpaid':
         return AppColors.danger;
       default:
         return AppColors.cyanDark;
@@ -39,13 +45,19 @@ class StatusChip extends StatelessWidget {
       case 'DocumentsIssued':
       case 'ReadyToTravel':
       case 'TravelCompleted':
+      case 'FullyPaid':
+      case 'Resolved':
         return AppColors.successTint;
       case 'Pending':
       case 'Processing':
       case 'AwaitingPayment':
       case 'DocumentsPending':
+      case 'PartiallyPaid':
+      case 'InProgress':
+      case 'WaitingForCustomer':
         return AppColors.yellowTint;
       case 'Cancelled':
+      case 'Unpaid':
         return AppColors.dangerTint;
       default:
         return AppColors.cyanTint;
