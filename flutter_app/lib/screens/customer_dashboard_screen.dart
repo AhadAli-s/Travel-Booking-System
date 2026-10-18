@@ -11,6 +11,9 @@ import '../widgets/info_card.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/status_chip.dart';
 import '../widgets/trip_hero_card.dart';
+import 'booking_details_screen.dart';
+import 'documents_screen.dart';
+import 'payments_screen.dart';
 
 /// Screen 5: customer dashboard with the travel countdown and four summary cards.
 class CustomerDashboardScreen extends StatefulWidget {
@@ -51,6 +54,13 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
     } catch (_) {
       // The error is shown by the FutureBuilder.
     }
+  }
+
+  /// Opens a page and reloads the dashboard when the customer comes back.
+  Future<void> _push(Widget screen) async {
+    await Navigator.of(context)
+        .push(MaterialPageRoute<void>(builder: (_) => screen));
+    if (mounted) _refresh();
   }
 
   void _comingSoon(String name) {
@@ -199,7 +209,9 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
       valueColor: trip == null
           ? AppColors.muted
           : StatusChip.colorFor(trip.status),
-      onTap: () => _comingSoon('Booking details'),
+      onTap: trip == null
+          ? null
+          : () => _push(BookingDetailsScreen(bookingId: trip.bookingId)),
     );
 
     final String paymentValue;
@@ -223,7 +235,14 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
       subtitle: paymentSubtitle,
       accent: AppColors.pink,
       tint: AppColors.pinkTint,
-      onTap: () => _comingSoon('Payments'),
+      onTap: trip == null
+          ? null
+          : () => _push(
+              PaymentsScreen(
+                bookingId: trip.bookingId,
+                reference: trip.bookingReference,
+              ),
+            ),
     );
 
     final documentsCard = InfoCard(
@@ -233,7 +252,9 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
       subtitle: 'Available',
       accent: AppColors.cyanDark,
       tint: AppColors.cyanTint,
-      onTap: () => _comingSoon('Travel documents'),
+      onTap: trip == null
+          ? null
+          : () => _push(DocumentsScreen(bookingId: trip.bookingId)),
     );
 
     final supportCard = InfoCard(
@@ -250,7 +271,10 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (trip != null)
-          TripHeroCard(trip: trip, onTap: () => _comingSoon('Booking details'))
+          TripHeroCard(
+            trip: trip,
+            onTap: () => _push(BookingDetailsScreen(bookingId: trip.bookingId)),
+          )
         else
           const _NoTripCard(),
         const SizedBox(height: 16),
