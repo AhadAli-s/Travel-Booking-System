@@ -6,7 +6,7 @@ import 'core/config.dart';
 import 'core/theme.dart';
 import 'core/token_storage.dart';
 import 'providers/auth_provider.dart';
-import 'screens/customer_dashboard_screen.dart';
+import 'screens/customer_shell.dart';
 import 'screens/login_screen.dart';
 import 'screens/splash_screen.dart';
 
@@ -74,9 +74,12 @@ class _AuthGate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
-    if (auth.showSplash) return const SplashScreen();
-    if (auth.status == AuthStatus.signedIn)
-      return const CustomerDashboardScreen();
+    if (auth.showSplash) {
+      return const SplashScreen();
+    }
+    if (auth.status == AuthStatus.signedIn) {
+      return const CustomerShell();
+    }
     return const LoginScreen();
   }
 }
