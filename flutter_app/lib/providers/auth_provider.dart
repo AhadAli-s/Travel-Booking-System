@@ -8,9 +8,11 @@ enum AuthStatus { unknown, signedOut, signedIn }
 
 /// Owns the signed in customer and the session token.
 class AuthProvider extends ChangeNotifier {
+  // The constructor takes public named arguments (api, storage) and stores them
+  // in private fields, so an initializing formal (this._api) is not possible here.
   AuthProvider({required ApiClient api, required TokenStorage storage})
     : _api = api, // ignore: prefer_initializing_formals
-      _storage = storage {
+      _storage = storage {// ignore: prefer_initializing_formals
     _api.onUnauthorized = _handleUnauthorized;
   }
 
