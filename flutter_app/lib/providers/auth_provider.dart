@@ -9,7 +9,7 @@ enum AuthStatus { unknown, signedOut, signedIn }
 /// Owns the signed in customer and the session token.
 class AuthProvider extends ChangeNotifier {
   AuthProvider({required ApiClient api, required TokenStorage storage})
-    : _api = api,
+    : _api = api, // ignore: prefer_initializing_formals
       _storage = storage {
     _api.onUnauthorized = _handleUnauthorized;
   }
