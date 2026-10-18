@@ -62,7 +62,9 @@ String travellersLabel(int adults, int children, int infants) {
 
 /// Hides all but the last [visible] characters: "AB1234567" -> "•••••4567"
 String maskSecret(String? value, {int visible = 4}) {
-  if (value == null || value.isEmpty) return '-';
+  if (value == null || value.isEmpty) {
+    return '-';
+  }
   if (value.length <= visible) return '•' * value.length;
   return '•' * (value.length - visible) +
       value.substring(value.length - visible);
