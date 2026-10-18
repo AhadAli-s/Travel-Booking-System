@@ -42,8 +42,9 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen> {
   }
 
   Future<List<Passenger>> _load() {
-    if (widget.guest)
+    if (widget.guest) {
       return Future<List<Passenger>>.value(widget.guestPassengers);
+    }
     return _service.passengers(widget.bookingId);
   }
 
@@ -280,7 +281,7 @@ class _PassengerSheetState extends State<_PassengerSheet> {
             } else if (!hasPassport) {
               passportText = 'Not provided';
             } else {
-              passportText = _reveal ? (passport ?? '') : maskSecret(passport);
+              passportText = _reveal ? passport : maskSecret(passport);
             }
 
             return Column(
