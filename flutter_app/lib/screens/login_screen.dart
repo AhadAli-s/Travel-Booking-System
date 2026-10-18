@@ -9,6 +9,7 @@ import '../widgets/auth_scaffold.dart';
 import '../widgets/error_banner.dart';
 import '../widgets/primary_button.dart';
 import 'forgot_password_screen.dart';
+import 'lookup_booking_screen.dart';
 import 'register_screen.dart';
 
 /// Screen 2: customer login.
@@ -138,6 +139,19 @@ class _LoginScreenState extends State<LoginScreen> {
                         builder: (_) => const RegisterScreen(),
                       ),
                     ),
+            ),
+            const SizedBox(height: 8),
+            TextButton.icon(
+              style: TextButton.styleFrom(foregroundColor: AppColors.cyanDark),
+              onPressed: _loading
+                  ? null
+                  : () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const LookupBookingScreen(),
+                      ),
+                    ),
+              icon: const Icon(Icons.search),
+              label: const Text('Find my booking with a reference'),
             ),
           ],
         ),
