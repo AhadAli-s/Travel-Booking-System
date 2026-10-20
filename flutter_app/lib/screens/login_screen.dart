@@ -9,6 +9,7 @@ import '../widgets/auth_scaffold.dart';
 import '../widgets/error_banner.dart';
 import '../widgets/primary_button.dart';
 import 'forgot_password_screen.dart';
+import 'admin_login_screen.dart';
 import 'lookup_booking_screen.dart';
 import 'register_screen.dart';
 
@@ -152,6 +153,21 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
               icon: const Icon(Icons.search),
               label: const Text('Find my booking with a reference'),
+            ),
+            const SizedBox(height: 4),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: AppColors.muted),
+              onPressed: _loading
+                  ? null
+                  : () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const AdminLoginScreen(),
+                      ),
+                    ),
+              child: const Text(
+                'Agency staff sign in',
+                style: TextStyle(fontSize: 13),
+              ),
             ),
           ],
         ),

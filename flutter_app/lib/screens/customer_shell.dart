@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../core/theme.dart';
 import 'customer_dashboard_screen.dart';
 import 'my_bookings_screen.dart';
+import 'profile_screen.dart';
+import 'support_tickets_screen.dart';
 
 /// Signed in home: bottom navigation between the customer's main pages.
 class CustomerShell extends StatefulWidget {
@@ -20,7 +22,12 @@ class _CustomerShellState extends State<CustomerShell> {
     return Scaffold(
       body: IndexedStack(
         index: _index,
-        children: const [CustomerDashboardScreen(), MyBookingsScreen()],
+        children: const [
+          CustomerDashboardScreen(),
+          MyBookingsScreen(),
+          SupportTicketsScreen(),
+          ProfileScreen(),
+        ],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
@@ -36,6 +43,16 @@ class _CustomerShellState extends State<CustomerShell> {
             icon: Icon(Icons.luggage_outlined),
             selectedIcon: Icon(Icons.luggage, color: AppColors.pink),
             label: 'My bookings',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.support_agent_outlined),
+            selectedIcon: Icon(Icons.support_agent, color: AppColors.pink),
+            label: 'Support',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person, color: AppColors.pink),
+            label: 'Profile',
           ),
         ],
       ),

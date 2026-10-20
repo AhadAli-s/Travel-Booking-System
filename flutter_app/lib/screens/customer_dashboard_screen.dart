@@ -13,7 +13,9 @@ import '../widgets/status_chip.dart';
 import '../widgets/trip_hero_card.dart';
 import 'booking_details_screen.dart';
 import 'documents_screen.dart';
+import 'notifications_screen.dart';
 import 'payments_screen.dart';
+import 'support_tickets_screen.dart';
 
 /// Screen 5: customer dashboard with the travel countdown and four summary cards.
 class CustomerDashboardScreen extends StatefulWidget {
@@ -63,14 +65,6 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
     if (mounted) _refresh();
   }
 
-  void _comingSoon(String name) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(content: Text('$name opens in the next update.')),
-      );
-  }
-
   Future<void> _confirmLogout() async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -113,7 +107,7 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
         actions: [
           IconButton(
             tooltip: 'Notifications',
-            onPressed: () => _comingSoon('Notifications'),
+            onPressed: () => _push(const NotificationsScreen()),
             icon: Badge(
               label: Text('$_unread'),
               isLabelVisible: _unread > 0,
@@ -264,7 +258,7 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
       subtitle: data.activeTickets == 1 ? 'Active ticket' : 'Active tickets',
       accent: const Color(0xFF8A6D00),
       tint: AppColors.yellowTint,
-      onTap: () => _comingSoon('Support tickets'),
+      onTap: () => _push(const SupportTicketsScreen()),
     );
 
     return Column(
