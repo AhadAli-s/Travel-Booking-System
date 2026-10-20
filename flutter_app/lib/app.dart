@@ -3,9 +3,11 @@ import 'package:provider/provider.dart';
 
 import 'core/api_client.dart';
 import 'core/config.dart';
+import 'core/staff_api_client.dart';
 import 'core/theme.dart';
 import 'core/token_storage.dart';
 import 'providers/auth_provider.dart';
+import 'providers/staff_auth_provider.dart';
 import 'screens/customer_shell.dart';
 import 'screens/login_screen.dart';
 import 'screens/splash_screen.dart';
@@ -21,6 +23,8 @@ class _TravelBookingAppState extends State<TravelBookingApp> {
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   late final ApiClient _api;
   late final AuthProvider _auth;
+  late final ApiClient _staffApi;
+  late final StaffAuthProvider _staffAuth;
   AuthStatus _lastStatus = AuthStatus.unknown;
 
   @override
@@ -30,6 +34,13 @@ class _TravelBookingAppState extends State<TravelBookingApp> {
     _auth = AuthProvider(api: _api, storage: TokenStorage());
     _auth.addListener(_onAuthChanged);
     _auth.boot();
+    // A second, independent client and token store for staff sessions, so a
+    // customer and a staff member can be signed in on the same device at once.
+    _staffApi = ApiClient(baseUrl: AppConfig.apiBaseUrl);
+    _staffAuth = StaffAuthProvider(
+      api: _staffApi,
+      storage: TokenStorage(storageKey: 'staff_auth_token'),
+    );
   }
 
   /// When the session ends (logout or expired token) close any pages that are
@@ -46,6 +57,7 @@ class _TravelBookingAppState extends State<TravelBookingApp> {
   void dispose() {
     _auth.removeListener(_onAuthChanged);
     _auth.dispose();
+    _staffAuth.dispose();
     super.dispose();
   }
 
@@ -55,6 +67,8 @@ class _TravelBookingAppState extends State<TravelBookingApp> {
       providers: [
         Provider<ApiClient>.value(value: _api),
         ChangeNotifierProvider<AuthProvider>.value(value: _auth),
+        Provider<StaffApiClient>.value(value: StaffApiClient(_staffApi)),
+        ChangeNotifierProvider<StaffAuthProvider>.value(value: _staffAuth),
       ],
       child: MaterialApp(
         title: 'Manage My Booking',
