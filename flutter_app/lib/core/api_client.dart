@@ -45,6 +45,44 @@ class ApiClient {
 
   Future<dynamic> delete(String path) => _send('DELETE', path);
 
+  /// Multipart upload for endpoints that take a file (document upload).
+  /// [fileField] is the form field name the server expects for the file
+  /// (the document endpoints expect "file"); [fields] are the other form fields
+  /// (e.g. documentType).
+  Future<dynamic> postMultipart(
+    String path, {
+    required String fileField,
+    required List<int> fileBytes,
+    required String fileName,
+    Map<String, String> fields = const {},
+  }) async {
+    final uri = Uri.parse('$baseUrl$path');
+    final request = http.MultipartRequest('POST', uri);
+    if (_token != null) request.headers['Authorization'] = 'Bearer $_token';
+    request.fields.addAll(fields);
+    request.files.add(
+      http.MultipartFile.fromBytes(fileField, fileBytes, filename: fileName),
+    );
+
+    http.StreamedResponse streamed;
+    try {
+      streamed = await _client
+          .send(request)
+          .timeout(const Duration(seconds: 30));
+    } on TimeoutException {
+      throw ApiException(
+        'The server took too long to respond. Please try again.',
+      );
+    } catch (_) {
+      throw ApiException(
+        'Cannot reach the server. Check your connection and try again.',
+      );
+    }
+
+    final response = await http.Response.fromStream(streamed);
+    return _handleResponse(response);
+  }
+
   Future<dynamic> _send(
     String method,
     String path, {
@@ -91,6 +129,10 @@ class ApiClient {
       );
     }
 
+    return _handleResponse(response);
+  }
+
+  dynamic _handleResponse(http.Response response) {
     dynamic data;
     if (response.bodyBytes.isNotEmpty) {
       try {
