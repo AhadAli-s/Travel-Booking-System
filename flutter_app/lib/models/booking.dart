@@ -1,5 +1,6 @@
 import '../core/json_utils.dart';
 import 'payment.dart';
+import 'staff.dart';
 
 List<T> _parseList<T>(dynamic value, T Function(Map<String, dynamic>) parse) {
   if (value is! List) return <T>[];
@@ -206,7 +207,10 @@ class Booking {
     this.travelDate,
     this.returnDate,
     this.notes,
+    this.customerId,
     this.customerName,
+    this.customerEmail,
+    this.assignedStaff,
     this.flight,
     this.hotel,
     this.transfer,
@@ -229,7 +233,15 @@ class Booking {
   final int numChildren;
   final int numInfants;
   final String? notes;
+
+  /// Only present when a staff member fetched this booking (GET /bookings or /bookings/:id for staff).
+  final int? customerId;
   final String? customerName;
+  final String? customerEmail;
+
+  /// Staff this booking is assigned to, or null if unassigned. Staff only.
+  final Staff? assignedStaff;
+
   final FlightInfo? flight;
   final HotelInfo? hotel;
   final TransferInfo? transfer;
@@ -260,6 +272,7 @@ class Booking {
     final transfer = json['Transfer'];
     final payment = json['Payment'];
     final customer = json['Customer'];
+    final assignedStaff = json['assignedStaff'];
     return Booking(
       id: toInt(json['id']),
       bookingReference: (json['bookingReference'] ?? '').toString(),
@@ -275,8 +288,15 @@ class Booking {
       numChildren: toInt(json['numChildren']),
       numInfants: toInt(json['numInfants']),
       notes: toNullableString(json['notes']),
+      customerId: json['customerId'] == null ? null : toInt(json['customerId']),
       customerName: customer is Map<String, dynamic>
           ? toNullableString(customer['fullName'])
+          : null,
+      customerEmail: customer is Map<String, dynamic>
+          ? toNullableString(customer['email'])
+          : null,
+      assignedStaff: assignedStaff is Map<String, dynamic>
+          ? Staff.fromJson(assignedStaff)
           : null,
       flight: flight is Map<String, dynamic>
           ? FlightInfo.fromJson(flight)
