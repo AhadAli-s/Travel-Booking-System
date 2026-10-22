@@ -9,7 +9,9 @@ import '../services/admin_service.dart';
 import '../widgets/error_state.dart';
 import '../widgets/metric_tile.dart';
 
-/// Screen 17: agency home metrics from the specification.
+/// Screen 17: agency home metrics from the specification. Embedded as a tab
+/// inside AdminShell, so this is plain content with no Scaffold of its own
+/// (the shell owns the single Scaffold, AppBar and sign-out action).
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
 
@@ -38,55 +40,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     }
   }
 
-  Future<void> _confirmLogout() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Sign out?'),
-        content: const Text(
-          'You will need to sign in again to access the staff portal.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: AppColors.pink),
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Sign out'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed == true && mounted) {
-      await context.read<StaffAuthProvider>().logout();
-      if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final staff = context.watch<StaffAuthProvider>().staff;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFB),
-      appBar: AppBar(
-        backgroundColor: AppColors.pink,
-        foregroundColor: Colors.white,
-        title: const Text(
-          'Agency dashboard',
-          style: TextStyle(fontWeight: FontWeight.w700),
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Sign out',
-            onPressed: _confirmLogout,
-            icon: const Icon(Icons.logout),
-          ),
-        ],
-      ),
-      body: RefreshIndicator(
+    return ColoredBox(
+      color: const Color(0xFFFAFAFB),
+      child: RefreshIndicator(
         color: AppColors.pink,
         onRefresh: _refresh,
         child: FutureBuilder<AdminDashboardData>(
