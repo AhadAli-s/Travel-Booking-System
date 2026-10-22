@@ -8,7 +8,7 @@ import '../providers/staff_auth_provider.dart';
 import '../widgets/auth_scaffold.dart';
 import '../widgets/error_banner.dart';
 import '../widgets/primary_button.dart';
-import 'admin_dashboard_screen.dart';
+import 'admin_shell.dart';
 
 /// Screen 16: staff sign in. Separate from the customer login, with its own token.
 class AdminLoginScreen extends StatefulWidget {
@@ -46,7 +46,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
       );
       if (mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute<void>(builder: (_) => const AdminDashboardScreen()),
+          MaterialPageRoute<void>(builder: (_) => const AdminShell()),
         );
       }
     } on ApiException catch (e) {
