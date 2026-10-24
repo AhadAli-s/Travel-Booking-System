@@ -38,16 +38,17 @@ class AdminBookingService {
     int? numInfants,
     String? notes,
   }) async {
-    final body = <String, dynamic>{};
-    if (destination != null) body['destination'] = destination;
-    if (departureCity != null) body['departureCity'] = departureCity;
-    if (departureAirport != null) body['departureAirport'] = departureAirport;
-    if (travelDate != null) body['travelDate'] = travelDate;
-    if (returnDate != null) body['returnDate'] = returnDate;
-    if (numAdults != null) body['numAdults'] = numAdults;
-    if (numChildren != null) body['numChildren'] = numChildren;
-    if (numInfants != null) body['numInfants'] = numInfants;
-    if (notes != null) body['notes'] = notes;
+    final body = <String, dynamic>{
+      'destination': ?destination,
+      'departureCity': ?departureCity,
+      'departureAirport': ?departureAirport,
+      'travelDate': ?travelDate,
+      'returnDate': ?returnDate,
+      'numAdults': ?numAdults,
+      'numChildren': ?numChildren,
+      'numInfants': ?numInfants,
+      'notes': ?notes,
+    };
     final json = await _api.patch('/bookings/$id', body: body);
     return Booking.fromJson(json as Map<String, dynamic>);
   }
@@ -81,12 +82,10 @@ class AdminBookingService {
         'arrivalAirport': arrivalAirport,
         'departureTime': departureTime,
         'arrivalTime': arrivalTime,
-        if (returnFlightNumber != null)
-          'returnFlightNumber': returnFlightNumber,
-        if (returnDepartureTime != null)
-          'returnDepartureTime': returnDepartureTime,
-        if (returnArrivalTime != null) 'returnArrivalTime': returnArrivalTime,
-        if (baggageAllowance != null) 'baggageAllowance': baggageAllowance,
+        'returnFlightNumber': ?returnFlightNumber,
+        'returnDepartureTime': ?returnDepartureTime,
+        'returnArrivalTime': ?returnArrivalTime,
+        'baggageAllowance': ?baggageAllowance,
       },
     );
     return FlightInfo.fromJson(json as Map<String, dynamic>);
@@ -109,12 +108,11 @@ class AdminBookingService {
         'hotelName': hotelName,
         'checkInDate': checkInDate,
         'checkOutDate': checkOutDate,
-        if (hotelAddress != null) 'hotelAddress': hotelAddress,
-        if (roomType != null) 'roomType': roomType,
-        if (numRooms != null) 'numRooms': numRooms,
-        if (boardBasis != null) 'boardBasis': boardBasis,
-        if (confirmationNumber != null)
-          'confirmationNumber': confirmationNumber,
+        'hotelAddress': ?hotelAddress,
+        'roomType': ?roomType,
+        'numRooms': ?numRooms,
+        'boardBasis': ?boardBasis,
+        'confirmationNumber': ?confirmationNumber,
       },
     );
     return HotelInfo.fromJson(json as Map<String, dynamic>);
@@ -130,10 +128,10 @@ class AdminBookingService {
     final json = await _api.put(
       '/bookings/$bookingId/transfer',
       body: {
-        if (pickupLocation != null) 'pickupLocation': pickupLocation,
-        if (pickupTime != null) 'pickupTime': pickupTime,
-        if (dropoffLocation != null) 'dropoffLocation': dropoffLocation,
-        if (transferStatus != null) 'transferStatus': transferStatus,
+        'pickupLocation': ?pickupLocation,
+        'pickupTime': ?pickupTime,
+        'dropoffLocation': ?dropoffLocation,
+        'transferStatus': ?transferStatus,
       },
     );
     return TransferInfo.fromJson(json as Map<String, dynamic>);
@@ -148,11 +146,7 @@ class AdminBookingService {
   }) async {
     final json = await _api.post(
       '/bookings/$bookingId/payment',
-      body: {
-        'amount': amount,
-        if (method != null) 'method': method,
-        if (note != null) 'note': note,
-      },
+      body: {'amount': amount, 'method': ?method, 'note': ?note},
     );
     return json as Map<String, dynamic>;
   }
@@ -164,7 +158,7 @@ class AdminBookingService {
   }) async {
     final json = await _api.post(
       '/bookings/$bookingId/payment/refund',
-      body: {'amount': amount, if (note != null) 'note': note},
+      body: {'amount': amount, 'note': ?note},
     );
     return json as Map<String, dynamic>;
   }
