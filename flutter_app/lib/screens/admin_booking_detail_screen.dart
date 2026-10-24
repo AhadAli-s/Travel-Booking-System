@@ -72,6 +72,30 @@ class _AdminBookingDetailScreenState extends State<AdminBookingDetailScreen> {
       ..showSnackBar(SnackBar(content: Text(text)));
   }
 
+  Future<void> _recordPayment(int bookingId) async {
+    final summary = (await _paymentFuture).summary;
+    if (!mounted) return;
+    final changed = await showRecordPaymentDialog(
+      context,
+      _bookingService,
+      bookingId,
+      summary,
+    );
+    if (changed == true) _refresh();
+  }
+
+  Future<void> _issueRefund(int bookingId) async {
+    final summary = (await _paymentFuture).summary;
+    if (!mounted) return;
+    final changed = await showIssueRefundDialog(
+      context,
+      _bookingService,
+      bookingId,
+      summary,
+    );
+    if (changed == true) _refresh();
+  }
+
   Future<void> _deleteDocument(int documentId) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -359,26 +383,8 @@ class _AdminBookingDetailScreenState extends State<AdminBookingDetailScreen> {
                         _PaymentSection(
                           future: _paymentFuture,
                           canManage: canManagePayments,
-                          onRecord: () async {
-                            final summary = (await _paymentFuture).summary;
-                            final changed = await showRecordPaymentDialog(
-                              context,
-                              _bookingService,
-                              booking.id,
-                              summary,
-                            );
-                            if (changed == true) _refresh();
-                          },
-                          onRefund: () async {
-                            final summary = (await _paymentFuture).summary;
-                            final changed = await showIssueRefundDialog(
-                              context,
-                              _bookingService,
-                              booking.id,
-                              summary,
-                            );
-                            if (changed == true) _refresh();
-                          },
+                          onRecord: () => _recordPayment(booking.id),
+                          onRefund: () => _issueRefund(booking.id),
                         ),
                         const SizedBox(height: 16),
                         SectionCard(
