@@ -11,9 +11,7 @@ import '../models/ticket.dart';
 import '../providers/staff_auth_provider.dart';
 import '../services/admin_staff_service.dart';
 import '../services/admin_ticket_service.dart';
-import '../widgets/error_banner.dart';
 import '../widgets/error_state.dart';
-import '../widgets/primary_button.dart';
 import '../widgets/status_chip.dart';
 
 /// Staff view of a ticket thread: reply, change status and reassign.
