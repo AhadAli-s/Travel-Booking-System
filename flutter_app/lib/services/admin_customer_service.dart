@@ -15,8 +15,9 @@ class AdminCustomerService {
     int offset = 0,
   }) async {
     final query = <String, String>{'limit': '$limit', 'offset': '$offset'};
-    if (search != null && search.trim().isNotEmpty)
+    if (search != null && search.trim().isNotEmpty) {
       query['search'] = search.trim();
+    }
     final json = await _api.get(
       '/admin/customers',
       query: query,
@@ -43,11 +44,7 @@ class AdminCustomerService {
   }) async {
     final json = await _api.post(
       '/admin/customers/$customerId/notes',
-      body: {
-        'note': note,
-        'channel': channel,
-        if (bookingId != null) 'bookingId': bookingId,
-      },
+      body: {'note': note, 'channel': channel, 'bookingId': ?bookingId},
     );
     return ContactNote.fromJson(json as Map<String, dynamic>);
   }
