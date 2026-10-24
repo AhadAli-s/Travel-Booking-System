@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
@@ -34,26 +36,32 @@ class _UploadDocumentDialog extends StatefulWidget {
 class _UploadDocumentDialogState extends State<_UploadDocumentDialog> {
   String _documentType = documentTypes.first;
   PlatformFile? _file;
+  Uint8List? _bytes;
   bool _loading = false;
   String? _error;
 
+  /// file_picker v12+ moved to a federated architecture: there is no more
+  /// FilePicker.platform, pickFile() (singular) returns one PlatformFile?
+  /// directly, and the bytes are read separately with readAsBytes() rather
+  /// than coming back on the PlatformFile itself.
   Future<void> _pickFile() async {
-    final result = await FilePicker.platform.pickFiles(
+    final file = await FilePicker.pickFile(
       type: FileType.custom,
-      allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg'],
-      withData: true,
+      allowedExtensions: const ['pdf', 'png', 'jpg', 'jpeg'],
     );
-    if (result != null && result.files.isNotEmpty) {
-      setState(() {
-        _file = result.files.first;
-        _error = null;
-      });
-    }
+    if (file == null) return;
+    final bytes = await file.readAsBytes();
+    if (!mounted) return;
+    setState(() {
+      _file = file;
+      _bytes = bytes;
+      _error = null;
+    });
   }
 
   Future<void> _submit() async {
     final file = _file;
-    final bytes = file?.bytes;
+    final bytes = _bytes;
     if (file == null || bytes == null) {
       setState(() => _error = 'Choose a file to upload');
       return;
