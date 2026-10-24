@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../core/admin_meta.dart';
 import '../core/api_client.dart';
 import '../core/format.dart';
 import '../core/staff_api_client.dart';
@@ -11,11 +10,9 @@ import '../models/admin_customer.dart';
 import '../models/booking.dart';
 import '../models/contact_note.dart';
 import '../models/ticket.dart';
-import '../providers/staff_auth_provider.dart';
 import '../services/admin_customer_service.dart';
 import '../widgets/error_banner.dart';
 import '../widgets/error_state.dart';
-import '../widgets/info_row.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/section_card.dart';
 import '../widgets/status_chip.dart';
